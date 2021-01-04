@@ -8,6 +8,7 @@ import { map } from 'rxjs/operators';
 })
 export class HeroesService {
   private url = 'https://crud-heroes-921a6-default-rtdb.firebaseio.com';
+
   constructor(private http: HttpClient) {}
 
   crearHeroe(heroe: HeroeModel) {
@@ -17,5 +18,14 @@ export class HeroesService {
         return heroe;
       })
     );
+  }
+
+  actualizarHeroe(heroe: HeroeModel) {
+    const heroeTemporal = {
+      ...heroe,
+    };
+    delete heroeTemporal.id;
+
+    return this.http.put(`${this.url}/heroes/${heroe.id}.json`, heroeTemporal);
   }
 }
