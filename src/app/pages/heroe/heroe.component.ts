@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { HeroesService } from 'src/app/services/heroes.service';
 import { HeroeModel } from '../models/heroe.model';
+import Swal from 'sweetalert2';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-heroe',
   templateUrl: './heroe.component.html',
@@ -19,15 +21,29 @@ export class HeroeComponent implements OnInit {
       console.log('Formulario no valido');
       return;
     }
+
+    Swal.fire({
+      title: 'Espere',
+      text: 'Guardando informacion',
+      icon: 'info',
+      allowOutsideClick: false,
+    });
+    Swal.showLoading();
+
+    let peticion: Observable<any>;
+
     if (this.heroe.id) {
-      this.heroesService.actualizarHeroe(this.heroe).subscribe((response) => {
-        console.log(response);
-      });
+      peticion = this.heroesService.actualizarHeroe(this.heroe);
     } else {
-      this.heroesService.crearHeroe(this.heroe).subscribe((response) => {
-        console.log(response);
-        this.heroe = response;
-      });
+      peticion = this.heroesService.crearHeroe(this.heroe);
     }
+
+    peticion.subscribe((resp) => {
+      Swal.fire({
+        title: this.heroe.nombre,
+        text: 'Se actualizo correctamente',
+        icon: 'success',
+      });
+    });
   }
 }
