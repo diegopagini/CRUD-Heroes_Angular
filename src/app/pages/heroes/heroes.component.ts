@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { HeroesService } from 'src/app/services/heroes.service';
 import Swal from 'sweetalert2';
 import { HeroeModel } from '../models/heroe.model';
@@ -9,18 +11,12 @@ import { HeroeModel } from '../models/heroe.model';
   styleUrls: ['./heroes.component.css'],
 })
 export class HeroesComponent implements OnInit {
-  heroes: HeroeModel[] = [];
-  cargando: boolean = false;
+  heroes$: Observable<HeroeModel[]>;
 
   constructor(private heroesService: HeroesService) {}
 
   ngOnInit(): void {
-    this.cargando = true;
-
-    this.heroesService.getHeroes().subscribe((resp) => {
-      this.heroes = resp;
-      this.cargando = false;
-    });
+    this.getHeroes();
   }
 
   borrarHeroe(heroe: HeroeModel, i: number) {
@@ -32,9 +28,15 @@ export class HeroesComponent implements OnInit {
       showCancelButton: true,
     }).then((resp) => {
       if (resp.value) {
-        this.heroesService.borrarHeroe(heroe.id).subscribe();
-        this.heroes.splice(i, 1);
+        this.heroesService
+          .borrarHeroe(heroe.id)
+          .pipe(tap(() => this.getHeroes()))
+          .subscribe();
       }
     });
+  }
+
+  private getHeroes(): void {
+    this.heroes$ = this.heroesService.getHeroes();
   }
 }
